@@ -10,7 +10,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "axios": "^1.7.2",
-    "venom-bot": "^5.1.0"
+    "@wppconnect-team/wppconnect": "^1.35.1",
+    "axios": "^1.7.2"
   }
 }
