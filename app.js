@@ -1,5 +1,5 @@
-const venom = require("venom-bot");
-const axios = require("axios");
+const wppconnect = require('@wppconnect-team/wppconnect');
+const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 
@@ -18,17 +18,20 @@ const cleanSession = () => {
 const start = () => {
     cleanSession(); // Limpa a sessão antes de criar uma nova conexão
 
-    venom.create({
-        session: `session_general`,
-        multidevice: true,
-        headless: true // Executar em segundo plano
-    }, (base64Qr, asciiQR) => {
-        console.log("QR Code gerado, escaneie com seu WhatsApp:");
-        console.log(asciiQR);
+    wppconnect.create({
+        session: 'session_general',
+        headless: true, // Executar em segundo plano
+        catchQR: (base64Qr, asciiQR) => {
+            console.log('QR Code gerado, escaneie com seu WhatsApp:');
+            console.log(asciiQR);
+        },
+        statusFind: (statusSession, session) => {
+            console.log(`Status da sessão: ${statusSession}`);
+        }
     })
     .then(client => {
         clientInstance = client;
-        console.log("WhatsApp conectado com sucesso!");
+        console.log('WhatsApp conectado com sucesso!');
 
         client.onMessage((message) => {
             console.log('Mensagem recebida:', message.body);
@@ -41,7 +44,7 @@ const start = () => {
     });
 };
 
-const apiKey = "AIzaSyBbNTFE9gMdzBHtW5yfPV6SLeLmHbyG8_I"; // Adicione sua chave de API aqui
+const apiKey = "AIzaSyBbNTFE9gMdzBHtW5yfPV6SLeLmHbyG8_I"; 
 const requestQueue = [];
 let isProcessingQueue = false;
 
@@ -90,14 +93,14 @@ const processQueue = () => {
         console.log(`Enviando prompt para API: ${fullPrompt}`);
 
         axios.post(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
-            "contents": [{"parts": [{"text": fullPrompt}]}]
+            contents: [{ parts: [{ text: fullPrompt }] }]
         })
         .then((response) => {
             console.log('Resposta completa da API:', response.data);
 
             if (response.data && response.data.candidates && response.data.candidates[0] && response.data.candidates[0].content) {
                 const contentParts = response.data.candidates[0].content.parts;
-                const reply = contentParts.map(part => part.text).join("\n");
+                const reply = contentParts.map(part => part.text).join('\n');
                 console.log('Resposta do Gemini:', reply);
 
                 session.history.push(`IA: ${reply}`);
